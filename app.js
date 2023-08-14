@@ -38,7 +38,7 @@ app.use(
 )
 
 // Cors Policy
-app.use(cors({ origin: process.env.CLIENT_DOMAIN }))
+app.use(cors())
 
 // Routes
 app.use("/api/auth", require("./routes/authRoute"))
