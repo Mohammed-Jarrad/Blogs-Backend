@@ -20,7 +20,24 @@ const app = express()
 // Middlewares
 app.use(express.json())
 
-// add come security headers to the response (helmt)
+app.use((req, res, next) => {
+	console.log("Before CORS")
+	next()
+})
+
+app.use(
+	cors({
+		origin: "https://jarrad-blogs.netlify.app",
+		optionsSuccessStatus: 200,
+	}),
+)
+
+app.use((req, res, next) => {
+	console.log("After CORS")
+	next()
+})
+
+/* // add some security headers to the response (helmt)
 app.use(helmet())
 
 // prevent http params pollution
@@ -35,10 +52,12 @@ app.use(
 		windowMs: 10 * 60 * 1000, // 10 min
 		max: 200,
 	}), // it allow the user to send 200 request every 10 miniute
-)
+) */
 
-// Cors Policy
-app.use(cors())
+// For Deployment
+app.get("/", async (req, res) => {
+	res.send({ msg: "Hello in Blog Backend" })
+})
 
 // Routes
 app.use("/api/auth", require("./routes/authRoute"))
@@ -48,13 +67,13 @@ app.use("/api/comments", require("./routes/commentsRoute"))
 app.use("/api/categories", require("./routes/categoriesRoute"))
 app.use("/api/password", require("./routes/passwordRoute"))
 
-// notfound handler
+/* // notfound handler
 app.use(notFound)
 // error handler
 app.use(errorHandler)
-
+ */
 // Running the server
 const PORT = process.env.PORT
 app.listen(PORT, () => {
-	console.log(`server is running on ${process.env.NODE_ENV} mode in port ${PORT}`)
+	console.log(`server is running on ${process.env.NODE_ENV.trim()} mode in port ${PORT}`)
 })
