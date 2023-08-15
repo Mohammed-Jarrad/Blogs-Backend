@@ -7,15 +7,16 @@ cloudinary.config({
 })
 
 // cloudinary upload image
-const cloudinaryUploadImage = async fileToUpload => {
+const cloudinaryUploadImage = async (fileBuffer, mimeType) => {
 	try {
-		const data = await cloudinary.uploader.upload(fileToUpload, {
+		const imageString = `data:${mimeType};base64,${fileBuffer.toString("base64")}`
+		const data = await cloudinary.uploader.upload(imageString, {
 			resource_type: "auto",
 		})
 		return data
 	} catch (error) {
 		console.log(error)
-		throw new Error("nternal Server Error (cloudinary)")
+		throw new Error("Internal Server Error (cloudinary)")
 	}
 }
 

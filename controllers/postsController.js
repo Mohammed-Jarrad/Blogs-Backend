@@ -25,8 +25,7 @@ module.exports.createPostController = asyncHandler(async (req, res) => {
 		return res.status(400).json({ message: error.details[0].message })
 	}
 	// upload photo
-	const imagePath = path.join(__dirname, `../images/${req.file.filename}`)
-	const result = await cloudinaryUploadImage(imagePath)
+	const result = await cloudinaryUploadImage(req.file.buffer, req.file.mimetype)
 	// create new post and save it to DB
 	const { title, category, description } = req.body
 	const post = await Post.create({
@@ -42,8 +41,6 @@ module.exports.createPostController = asyncHandler(async (req, res) => {
 
 	// send response to the client
 	res.status(201).json({ post, message: "Your post has been created successfully" })
-	// remove image from the server (images floder)
-	fs.unlinkSync(imagePath)
 })
 
 /** ----------------------------------------------------------------
@@ -224,8 +221,7 @@ module.exports.updatePostImageController = asyncHandler(async (req, res) => {
 	// Remove old image
 	await cloudinaryRemoveImage(post.image.publicId)
 	// Upload the new image
-	const imagePath = path.join(__dirname, `../images/${req.file.filename}`)
-	const result = await cloudinaryUploadImage(imagePath)
+	const result = await cloudinaryUploadImage(req.file.buffer, req.file.mimetype)
 	// Update image feild in the DB
 	const updatedPost = await Post.findByIdAndUpdate(
 		req.params.id,
@@ -253,8 +249,6 @@ module.exports.updatePostImageController = asyncHandler(async (req, res) => {
 		updatedPost,
 		message: "Your post image has been updated successfully",
 	})
-	// Remove image from sesrver (images folder)
-	fs.unlinkSync(imagePath)
 })
 
 /** ----------------------------------------------------------------

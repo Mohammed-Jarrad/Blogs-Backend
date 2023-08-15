@@ -12,11 +12,7 @@ const bcrypt = require("bcryptjs")
 const crypto = require("crypto")
 const path = require("path")
 const fs = require("fs")
-const {
-	cloudinaryRemoveImage,
-	cloudinaryUploadImage,
-	cloudinaryRemoveMultipleImages,
-} = require("../utils/cloudinary")
+
 const sendEmail = require("../utils/sendEmail")
 
 /** ----------------------------------------------------------------

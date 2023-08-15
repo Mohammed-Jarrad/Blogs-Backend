@@ -119,10 +119,8 @@ module.exports.profilePhotoUploadController = asyncHandler(async (req, res) => {
 	if (!req.file) {
 		return res.status(400).json({ message: "no file provided" })
 	}
-	// Get the path of the image
-	const imagePath = path.join(__dirname, `../images/${req.file.filename}`)
 	// upload to cloudinary
-	const result = await cloudinaryUploadImage(imagePath)
+	const result = await cloudinaryUploadImage(req.file.buffer, req.file.mimetype)
 	// get the user from DB
 	const user = await User.findById(req.user.id)
 	// delete the old profile photo if exist
@@ -143,8 +141,6 @@ module.exports.profilePhotoUploadController = asyncHandler(async (req, res) => {
 			publicId: result.public_id,
 		},
 	})
-	// remove image from the server (image folder)
-	fs.unlinkSync(imagePath)
 })
 
 /** ----------------------------------------------------------------
