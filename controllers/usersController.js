@@ -1,15 +1,15 @@
-const asyncHandler = require("express-async-handler")
-const { User, validateUpdateUser, validateLoginUser } = require("../models/User")
-const { Post } = require("../models/Post")
-const { Comment } = require("../models/Comment")
-const bcrypt = require("bcryptjs")
-const path = require("path")
-const fs = require("fs")
+const asyncHandler = require('express-async-handler')
+const { User, validateUpdateUser, validateLoginUser } = require('../models/User')
+const { Post } = require('../models/Post')
+const { Comment } = require('../models/Comment')
+const bcrypt = require('bcryptjs')
+const path = require('path')
+const fs = require('fs')
 const {
 	cloudinaryRemoveImage,
 	cloudinaryUploadImage,
 	cloudinaryRemoveMultipleImages,
-} = require("../utils/cloudinary")
+} = require('../utils/cloudinary')
 
 /** ----------------------------------------------------------------
  * @desc Get All Users Profile
@@ -19,7 +19,7 @@ const {
    -----------------------------------------------------------------
  */
 module.exports.getAllUsersController = asyncHandler(async (req, res) => {
-	const users = await User.find().select("-password").populate("posts")
+	const users = await User.find().select('-password').populate('posts')
 	res.status(200).json(users)
 })
 
@@ -32,24 +32,24 @@ module.exports.getAllUsersController = asyncHandler(async (req, res) => {
  */
 module.exports.getUserController = asyncHandler(async (req, res) => {
 	const user = await User.findById(req.params.id)
-		.select("-password")
+		.select('-password')
 		.populate({
-			path: "posts",
+			path: 'posts',
 			populate: {
-				path: "user",
-				select: "_id username email profilePhoto",
+				path: 'user',
+				select: '_id username email profilePhoto',
 			},
 		})
 		.populate({
-			path: "posts",
+			path: 'posts',
 			populate: {
-				path: "likes",
-				select: "-password",
+				path: 'likes',
+				select: '-password',
 			},
 		})
 
 	if (!user) {
-		return res.status(404).json({ message: "User Not Found" })
+		return res.status(404).json({ message: 'User Not Found' })
 	}
 	res.status(200).json(user)
 })
@@ -83,12 +83,19 @@ module.exports.updateUserController = asyncHandler(async (req, res) => {
 		},
 		{ new: true },
 	)
-		.select("-password")
+		.select('-password')
 		.populate({
-			path: "posts",
+			path: 'posts',
 			populate: {
-				path: "user",
-				select: "-password",
+				path: 'user',
+				select: '-password',
+			},
+		})
+		.populate({
+			path: 'posts',
+			populate: {
+				path: 'likes',
+				select: '-password',
 			},
 		})
 
@@ -117,7 +124,7 @@ module.exports.getUsersCountController = asyncHandler(async (req, res) => {
 module.exports.profilePhotoUploadController = asyncHandler(async (req, res) => {
 	// validation
 	if (!req.file) {
-		return res.status(400).json({ message: "no file provided" })
+		return res.status(400).json({ message: 'no file provided' })
 	}
 	// upload to cloudinary
 	const result = await cloudinaryUploadImage(req.file.buffer, req.file.mimetype)
@@ -135,7 +142,7 @@ module.exports.profilePhotoUploadController = asyncHandler(async (req, res) => {
 	await user.save()
 	// send response to client
 	res.status(200).json({
-		message: "your profile photo uploaded successfully",
+		message: 'your profile photo uploaded successfully',
 		profilePhoto: {
 			url: result.secure_url,
 			publicId: result.public_id,
@@ -154,7 +161,7 @@ module.exports.deleteUserProfileController = asyncHandler(async (req, res) => {
 	// Get the user from DB
 	const user = await User.findById(req.params.id)
 	if (!user) {
-		return res.status(404).json({ message: "users not found" })
+		return res.status(404).json({ message: 'users not found' })
 	}
 	// Get All Posts from DBs
 	const posts = await Post.find({ user: user._id })
@@ -182,5 +189,5 @@ module.exports.deleteUserProfileController = asyncHandler(async (req, res) => {
 	// delete the user himself
 	await User.findByIdAndDelete(req.params.id)
 	// send a response to the client
-	res.status(200).json({ message: "your profile has been deleted" })
+	res.status(200).json({ message: 'your profile has been deleted' })
 })

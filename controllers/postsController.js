@@ -1,11 +1,11 @@
-const asyncHandler = require("express-async-handler")
-const { Post, validateCreatePost, validateUpdatePost } = require("../models/Post")
-const bcrypt = require("bcryptjs")
-const path = require("path")
-const fs = require("fs")
-const { cloudinaryRemoveImage, cloudinaryUploadImage } = require("../utils/cloudinary")
-const { default: mongoose } = require("mongoose")
-const { Comment } = require("../models/Comment")
+const asyncHandler = require('express-async-handler')
+const { Post, validateCreatePost, validateUpdatePost } = require('../models/Post')
+const bcrypt = require('bcryptjs')
+const path = require('path')
+const fs = require('fs')
+const { cloudinaryRemoveImage, cloudinaryUploadImage } = require('../utils/cloudinary')
+const { default: mongoose } = require('mongoose')
+const { Comment } = require('../models/Comment')
 
 /** ----------------------------------------------------------------
  * @desc Create New Post
@@ -17,7 +17,7 @@ const { Comment } = require("../models/Comment")
 module.exports.createPostController = asyncHandler(async (req, res) => {
 	// Validation for image
 	if (!req.file) {
-		return res.status(400).json({ message: "no image provided" })
+		return res.status(400).json({ message: 'no image provided' })
 	}
 	// Validation for data
 	const { error } = validateCreatePost(req.body)
@@ -40,7 +40,7 @@ module.exports.createPostController = asyncHandler(async (req, res) => {
 	})
 
 	// send response to the client
-	res.status(201).json({ post, message: "Your post has been created successfully" })
+	res.status(201).json({ post, message: 'Your post has been created successfully' })
 })
 
 /** ----------------------------------------------------------------
@@ -60,21 +60,21 @@ module.exports.getAllPostsController = asyncHandler(async (req, res) => {
 			.skip((pageNumber - 1) * POST_PER_PAGE)
 			.limit(POST_PER_PAGE)
 			.sort({ createdAt: -1 })
-			.populate("user", "-password")
-			.populate("comments")
-			.populate("likes", "-password")
+			.populate('user', '-password')
+			.populate('comments')
+			.populate('likes', '-password')
 	} else if (category) {
 		posts = await Post.find({ category })
 			.sort({ createdAt: -1 })
-			.populate("user", "-password")
-			.populate("comments")
-			.populate("likes", "-password")
+			.populate('user', '-password')
+			.populate('comments')
+			.populate('likes', '-password')
 	} else {
 		posts = await Post.find()
 			.sort({ createdAt: -1 })
-			.populate("user", "-password")
-			.populate("comments")
-			.populate("likes", "-password")
+			.populate('user', '-password')
+			.populate('comments')
+			.populate('likes', '-password')
 	}
 
 	res.status(200).json(posts)
@@ -90,18 +90,18 @@ module.exports.getAllPostsController = asyncHandler(async (req, res) => {
 
 module.exports.getSinglePostController = asyncHandler(async (req, res) => {
 	const post = await Post.findById(req.params.id)
-		.populate("user", "-password")
+		.populate('user', '-password')
 		.populate({
-			path: "comments",
+			path: 'comments',
 			populate: {
-				path: "user",
-				select: "-password",
+				path: 'user',
+				select: '-password',
 			},
 		})
-		.populate("likes", "_id username profilePhoto")
+		.populate('likes', '_id username profilePhoto')
 
 	if (!post) {
-		return res.status(404).json({ message: "post not found" })
+		return res.status(404).json({ message: 'post not found' })
 	}
 	res.status(200).json(post)
 })
@@ -130,7 +130,7 @@ module.exports.getPostCountController = asyncHandler(async (req, res) => {
 module.exports.deletePostController = asyncHandler(async (req, res) => {
 	const post = await Post.findById(req.params.id)
 	if (!post) {
-		return res.status(404).json({ message: "post not found" })
+		return res.status(404).json({ message: 'post not found' })
 	}
 	// verify admin & owner of the post
 	if (req.user.isAdmin || req.user.id == post.user.toString()) {
@@ -142,11 +142,11 @@ module.exports.deletePostController = asyncHandler(async (req, res) => {
 		})
 
 		res.status(200).json({
-			message: "post has been deleted successfully",
+			message: 'post has been deleted successfully',
 			postId: post._id,
 		})
 	} else {
-		res.status(403).json({ message: "access denied, forbidden" })
+		res.status(403).json({ message: 'access denied, forbidden' })
 	}
 })
 
@@ -166,11 +166,11 @@ module.exports.updatePostController = asyncHandler(async (req, res) => {
 	// get post from the DB, and check
 	const post = await Post.findById(req.params.id)
 	if (!post) {
-		return res.status(404).json({ message: "post not found" })
+		return res.status(404).json({ message: 'post not found' })
 	}
 	// verify only owner of the post
 	if (req.user.id !== post.user.toString()) {
-		return res.status(403).json({ message: "access denied, you are not allowed" })
+		return res.status(403).json({ message: 'access denied, you are not allowed' })
 	}
 	// update post
 	const { title, description, category } = req.body
@@ -185,12 +185,12 @@ module.exports.updatePostController = asyncHandler(async (req, res) => {
 		},
 		{ new: true },
 	)
-		.populate("user", "-password")
+		.populate('user', '-password')
 		.populate({
-			path: "comments",
+			path: 'comments',
 			populate: {
-				path: "user",
-				select: "-password",
+				path: 'user',
+				select: '-password',
 			},
 		})
 
@@ -207,16 +207,16 @@ module.exports.updatePostController = asyncHandler(async (req, res) => {
 module.exports.updatePostImageController = asyncHandler(async (req, res) => {
 	// validation
 	if (!req.file) {
-		return res.status(400).json({ message: "no image provided" })
+		return res.status(400).json({ message: 'no image provided' })
 	}
 	// get post from the DB, and check
 	const post = await Post.findById(req.params.id)
 	if (!post) {
-		return res.status(404).json({ message: "post not found" })
+		return res.status(404).json({ message: 'post not found' })
 	}
 	// verify only owner of the post
 	if (req.user.id !== post.user.toString()) {
-		return res.status(403).json({ message: "access denied, you are not allowed" })
+		return res.status(403).json({ message: 'access denied, you are not allowed' })
 	}
 	// Remove old image
 	await cloudinaryRemoveImage(post.image.publicId)
@@ -235,19 +235,19 @@ module.exports.updatePostImageController = asyncHandler(async (req, res) => {
 		},
 		{ new: true },
 	)
-		.populate("user", "-password")
-		.populate("comments")
+		.populate('user', '-password')
+		.populate('comments')
 		.populate({
-			path: "comments",
+			path: 'comments',
 			populate: {
-				path: "user",
-				select: "-password",
+				path: 'user',
+				select: '-password',
 			},
 		})
 	// Send response
 	res.status(200).json({
 		updatedPost,
-		message: "Your post image has been updated successfully",
+		message: 'Your post image has been updated successfully',
 	})
 })
 
@@ -263,7 +263,7 @@ module.exports.toggleLikeController = asyncHandler(async (req, res) => {
 	let post = await Post.findById(req.params.id)
 
 	if (!post) {
-		return res.status(404).json({ message: "post not found" })
+		return res.status(404).json({ message: 'post not found' })
 	}
 	// check if the user already like the post
 	const loggedInUser = req.user.id
@@ -277,7 +277,7 @@ module.exports.toggleLikeController = asyncHandler(async (req, res) => {
 				},
 			},
 			{ new: true },
-		).populate("likes", "username profilePhoto")
+		).populate('likes', 'username profilePhoto')
 	} else {
 		post = await Post.findByIdAndUpdate(
 			postId,
@@ -287,7 +287,7 @@ module.exports.toggleLikeController = asyncHandler(async (req, res) => {
 				},
 			},
 			{ new: true },
-		).populate("likes", "username profilePhoto")
+		).populate('likes', 'username profilePhoto')
 	}
 
 	res.status(200).json(post)

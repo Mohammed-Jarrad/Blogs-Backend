@@ -1,19 +1,19 @@
-const asyncHandler = require("express-async-handler")
+const asyncHandler = require('express-async-handler')
 const {
 	User,
 	validateUpdateUser,
 	validateLoginUser,
 	validateEmail,
 	validateNewPassword,
-} = require("../models/User")
-const { Post } = require("../models/Post")
-const { Comment } = require("../models/Comment")
-const bcrypt = require("bcryptjs")
-const crypto = require("crypto")
-const path = require("path")
-const fs = require("fs")
+} = require('../models/User')
+const { Post } = require('../models/Post')
+const { Comment } = require('../models/Comment')
+const bcrypt = require('bcryptjs')
+const crypto = require('crypto')
+const path = require('path')
+const fs = require('fs')
 
-const sendEmail = require("../utils/sendEmail")
+const sendEmail = require('../utils/sendEmail')
 
 /** ----------------------------------------------------------------
  * @desc Send Reset Password Link
@@ -31,11 +31,11 @@ module.exports.sendResetPasswordLinkController = asyncHandler(async (req, res) =
 	// find user, and check if exist
 	let user = await User.findOne({ email: req.body.email })
 	if (!user) {
-		return res.status(404).json({ message: "user not found with given email" })
+		return res.status(404).json({ message: 'user not found with given email' })
 	}
 	// update a VT in user
 	if (!user.verificationToken) {
-		user.verificationToken = crypto.randomBytes(32).toString("hex")
+		user.verificationToken = crypto.randomBytes(32).toString('hex')
 		await user.save()
 	}
 	// create link
@@ -47,9 +47,9 @@ module.exports.sendResetPasswordLinkController = asyncHandler(async (req, res) =
         </p>
     `
 	// send email
-	await sendEmail(user.email, "Reset Password", htmlTemplate)
+	await sendEmail(user.email, 'Reset Password', htmlTemplate)
 	// response
-	res.status(200).json({ message: "We send you a link to reset your password, check your inbox" })
+	res.status(200).json({ message: 'We send you a link to reset your password, check your inbox' })
 })
 
 /** ----------------------------------------------------------------
@@ -64,13 +64,13 @@ module.exports.getResetPasswordLinkController = asyncHandler(async (req, res) =>
 
 	const user = await User.findById(userId)
 	if (!user) {
-		return res.status(400).json({ message: "invalid link" })
+		return res.status(400).json({ message: 'invalid link' })
 	}
 	if (user.verificationToken !== token) {
-		return res.status(400).json({ message: "invalid link" })
+		return res.status(400).json({ message: 'invalid link' })
 	}
 
-	res.status(200).json({ message: "valid link" })
+	res.status(200).json({ message: 'valid link' })
 })
 
 /** ----------------------------------------------------------------
@@ -83,31 +83,27 @@ module.exports.getResetPasswordLinkController = asyncHandler(async (req, res) =>
 module.exports.ResetPasswordController = asyncHandler(async (req, res) => {
 	const { userId, token } = req.params
 	const { password } = req.body
-
 	const { error } = validateNewPassword(req.body)
 	if (error) {
 		return res.status(400).json({ message: error.details[0].message })
 	}
-
 	const user = await User.findById(userId)
 	if (!user) {
-		return res.status(400).json({ message: "invalid link" })
+		return res.status(400).json({ message: 'invalid link' })
 	}
 	if (!user.verificationToken) {
-		return res.status(400).json({ message: "invalid link" })
+		return res.status(400).json({ message: 'invalid link' })
 	}
-
 	if (!user.isAccountVerified) {
 		user.isAccountVerified = true
 	}
-
 	// hash the pass
 	const salt = await bcrypt.genSalt(10)
 	const hashedPass = await bcrypt.hash(password, salt)
 	// edit password in user and delete VT
 	user.password = hashedPass
-	user.verificationToken = ""
+	user.verificationToken = ''
 	await user.save()
 	// response
-	res.status(200).json({ message: "your password has been reset successfully" })
+	res.status(200).json({ message: 'your password has been reset successfully' })
 })

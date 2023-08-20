@@ -1,8 +1,8 @@
-const asyncHandler = require("express-async-handler")
-const bcrypt = require("bcryptjs")
-const { User, validateRegisterUser, validateLoginUser } = require("../models/User")
-const crypto = require("crypto")
-const sendEmail = require("../utils/sendEmail")
+const asyncHandler = require('express-async-handler')
+const bcrypt = require('bcryptjs')
+const { User, validateRegisterUser, validateLoginUser } = require('../models/User')
+const crypto = require('crypto')
+const sendEmail = require('../utils/sendEmail')
 
 /** ----------------------------------------------------------------
  * @desc Register New User - Sign Up
@@ -19,14 +19,14 @@ module.exports.registerUserController = asyncHandler(async (req, res) => {
 
 	let user = await User.findOne({ email: req.body.email })
 	if (user) {
-		return res.status(400).json({ message: "User already exist" })
+		return res.status(400).json({ message: 'User already exist' })
 	}
 
 	const salt = await bcrypt.genSalt(10)
 	const hashedPassword = await bcrypt.hash(req.body.password, salt)
 
 	// create random token
-	const verificationToken = crypto.randomBytes(32).toString("hex")
+	const verificationToken = crypto.randomBytes(32).toString('hex')
 
 	// create new user with custom verification token
 	const newUser = await User.create({
@@ -46,11 +46,11 @@ module.exports.registerUserController = asyncHandler(async (req, res) => {
             </p>
         `
 
-	await sendEmail(newUser.email, "Verification Account", htmlTemplate)
+	await sendEmail(newUser.email, 'Verification Account', htmlTemplate)
 
 	return res
 		.status(201)
-		.json({ message: "We sent to you an email, Please verify your email address" })
+		.json({ message: 'We sent to you an email, Please verify your email address' })
 })
 
 /** ----------------------------------------------------------------
@@ -69,12 +69,12 @@ module.exports.loginUserController = asyncHandler(async (req, res) => {
 
 	let user = await User.findOne({ email: req.body.email })
 	if (!user) {
-		return res.status(400).json({ message: "invalid email or password" })
+		return res.status(400).json({ message: 'invalid email or password' })
 	}
 
 	const isPasswordMatch = await bcrypt.compare(req.body.password, user.password)
 	if (!isPasswordMatch) {
-		return res.status(400).json({ message: "invalid email or password" })
+		return res.status(400).json({ message: 'invalid email or password' })
 	}
 
 	// Sending email (verify accoount if not verified)
@@ -89,11 +89,11 @@ module.exports.loginUserController = asyncHandler(async (req, res) => {
                 to Verify your account.
             </p>
         `
-		await sendEmail(user.email, "Verification Account", htmlTemplate)
+		await sendEmail(user.email, 'Verification Account', htmlTemplate)
 
 		return res
 			.status(400)
-			.json({ message: "we sent to you an email, please verify your email address" })
+			.json({ message: 'we sent to you an email, please verify your email address' })
 	}
 
 	const token = user.generateAuthToken()
@@ -119,7 +119,7 @@ module.exports.verifyUserAccountController = asyncHandler(async (req, res) => {
 	const { token } = req.params
 	const user = await User.findOne({ verificationToken: token })
 
-	if (!user) return res.status(400).json({ message: "invalid link (no user)" })
+	if (!user) return res.status(400).json({ message: 'invalid link (no user)', isVerified: false })
 
 	await User.updateOne(
 		{
@@ -128,7 +128,7 @@ module.exports.verifyUserAccountController = asyncHandler(async (req, res) => {
 		{
 			$set: {
 				isAccountVerified: true,
-				verificationToken: "",
+				verificationToken: '',
 			},
 		},
 		{
@@ -136,5 +136,5 @@ module.exports.verifyUserAccountController = asyncHandler(async (req, res) => {
 		},
 	)
 
-	res.status(200).json({ message: "your account has been verified successfully" })
+	res.status(200).json({ message: 'your account has been verified successfully', isVerified: true })
 })
